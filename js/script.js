@@ -1,43 +1,37 @@
 /*
-Treehouse Techdegree:
 FSJS Project 2 - Data Pagination and Filtering
 */
-
-let students = data;
 const itemsPerPage = 9;
-let pagination = document.querySelector('.link-list');
-let searchHeader = document.querySelector('.header');
-let searchBar = `<label for="search" class="student-search">
+const searchHeader = document.querySelector('.header');
+const searchBar = `<label for="search" class="student-search">
                   <input id="search" placeholder="Search by name...">
                   <button type="button"><img src="img/icn-search.svg" alt="Search icon"></button>
                </label>`;
-
 searchHeader.insertAdjacentHTML('beforeend', searchBar);
-let searchValue = document.querySelector('#search');
+const searchValue = document.querySelector('#search');
 const searchButton = document.querySelector('.student-search button');
-let studentList = document.querySelector('.student-list');
+
 
 /*
-For assistance:
-   Check out the "Project Resources" section of the Instructions tab: https://teamtreehouse.com/projects/data-pagination-and-filtering#instructions
-   Reach out in your Slack community: https://treehouse-fsjs-102.slack.com/app_redirect?channel=unit-2
+   FUNCTIONS
 */
-
 /*
-Create the `showPage` function
-This function will create and insert/append the elements needed to display a "page" of nine students
+This function will display a page of 9 students
 */
 function showPage(list, page) {
    const startIndex = (page * itemsPerPage) - itemsPerPage;
    const endIndex = page * itemsPerPage;
+   const studentList = document.querySelector('.student-list');
    studentList.innerHTML = '';
    
+   // create a conditional to display "No results" when search yields 0 results
    if (list.length === 0) {
-      studentList.innerHTML = '<h1>No Results</h1>';
+      studentList.innerHTML = '<h1>No Results Found</h1>';
    } else {
+      // loop over the length of the `list`
       for (let i = 0; i < list.length; i++) {
+         // create a conditional to display the proper students
          if (i >= startIndex && i < endIndex) {
-            
             let student = `<li class="student-item cf">
                               <div class="student-details">
                                  <img class="avatar" src="${list[i].picture.large}" alt="Profile Picture">
@@ -51,70 +45,76 @@ function showPage(list, page) {
             studentList.insertAdjacentHTML('beforeend', student);
                
          }
-         
       }
    }
 }
 
-
-
 /*
-Create the `addPagination` function
-This function will create and insert/append the elements needed for the pagination buttons
+This function will create and dispaly the pagination buttons
 */
 function addPagination(list) {
    const numOfPages = Math.ceil(list.length / itemsPerPage);
+   const pagination = document.querySelector('.link-list');
    pagination.innerHTML = '';
 
    if(list.length !== 0) {
+      // loop over the number of pages needed 
       for (let i = 1; i <= numOfPages; i++) {
-         let button =   `<li>
+         // Create the button elements
+         const button =   `<li>
                            <button type="button">${i}</button>
                         </li>`;
          pagination.insertAdjacentHTML('beforeend', button);
       }
-      // console.log(numOfPages);
-      let firstButton = document.querySelector("li button");
+      // Give the first button a class of "active"
+      const firstButton = document.querySelector("li button");
       firstButton.classList.add('active');
    }  
+   // Create an event listener on the "link-list" element
+   pagination.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON') {
+         const page = e.target.textContent
+         const firstElement = document.querySelector(".active");
+         // Remove 'active' class from previous button and add it to the clicked button
+         firstElement.className = '';
+         e.target.className = 'active';
+         showPage(filterStudents(searchValue), page);
+      }
+   });
 }
 
-function filter(searchString){
+/*
+This function will filter students and display results based on search criteria
+*/
+function filterStudents(searchString){
    let newData = [];
-   for (let i = 0; i < students.length; i++) {
-      let name = `${students[i].name.first.toLowerCase()} ${students[i].name.last.toLowerCase()}`
-      if (name.includes(searchString.value.toLowerCase())) {
-         newData.push(students[i]);
+   for (let i = 0; i < data.length; i++) {
+      const name = `${data[i].name.first} ${data[i].name.last}`
+      if (name.toLowerCase().includes(searchString.value.toLowerCase())) {
+         newData.push(data[i]);
       }
    }
    return newData;
 }
 
-
-// Call functions
-showPage(students, 1);
-addPagination(students);
-
-pagination.addEventListener('click', (e) => {
-   if (e.target.tagName === 'BUTTON') {
-      let page = e.target.textContent
-      let firstElement = document.querySelector(".active");
-      firstElement.className = '';
-      e.target.className = 'active';
-      showPage(filter(searchValue), page);
-   }
-});
-
-
-searchValue.addEventListener('keyup', (e) => {
-   let newData = filter(searchValue);
+/*
+This function will handle the 'keyup' and 'click' type event listeners
+*/
+function handleSearchEvent(){
+   const newData = filterStudents(searchValue);
    showPage(newData, 1);
    addPagination(newData);
-});
+}
 
-searchButton.addEventListener('click', (e) => {
-   let newData = filter(searchValue);
-   showPage(newData, 1);
-   addPagination(newData);
-});
-      
+/*
+Show initial page and pagination
+*/
+showPage(data, 1);
+addPagination(data);
+
+/*
+Event Listeners
+*/
+searchValue.addEventListener('keyup', handleSearchEvent);
+
+searchButton.addEventListener('click', handleSearchEvent);
